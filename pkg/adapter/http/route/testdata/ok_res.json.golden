@@ -1,0 +1,14 @@
+{
+    "data": {
+        "getMessages": [
+            {
+                "id": "1",
+                "text": "testMessage1",
+                "created_at": "",
+                "user": {
+                    "name": "testUser1"
+                }
+            }
+        ]
+    }
+}

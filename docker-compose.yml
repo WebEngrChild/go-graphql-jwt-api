@@ -1,0 +1,47 @@
+version: "3.8" # composeファイルのバージョン
+services:
+  app: # サービス名
+    container_name: app
+    build:
+      context: .
+      target: dev # 開発ステージを指定
+      dockerfile: ./build/docker/go/Dockerfile # ビルドに使うDockerfileの場所
+    tty: true # コンテナの永続化
+    ports: # ホストOSのポートとコンテナのポートをつなげる
+      - "8080:8080"
+      - "2345:2345" # デバッグポートの解放
+    security_opt: # Docker上で delveを利用する為の設定
+      - apparmor:unconfined
+    cap_add: # Docker上で delveを利用する為の設定
+      - SYS_PTRACE
+    env_file:  # 環境変数
+      - .env
+    volumes:
+      - ./:/app # マウントディレクトリ
+    depends_on:
+      - mysql
+    networks:
+      my_network:
+        ipv4_address: 172.30.0.2
+
+  mysql:
+    container_name: mysql
+    build: ./build/docker/mysql/
+    volumes:
+      # 初期データを投入するSQLが格納されているdir
+      - ./build/docker/mysql/init:/docker-entrypoint-initdb.d
+      - ./build/docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./build/db/log:/var/log/mysql
+      # 永続化するときにマウントするdir
+#      - ./build/docker/mysql/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${API_DB_PASS}
+    ports:
+      - ${API_DB_PORT}:3306
+    networks:
+      my_network:
+        ipv4_address: 172.30.0.3
+
+networks:
+  my_network:
+    external: true

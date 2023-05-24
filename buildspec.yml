@@ -1,0 +1,65 @@
+version: 0.2
+
+env:
+  variables:
+    DOCKER_BUILDKIT: "1"
+  parameter-store:
+    DOCKER_HUB_USER: "DOCKER_HUB_PERSONAL_ACCOUNT_USER_ID"
+    DOCKER_HUB_TOKEN: "DOCKER_HUB_PERSONAL_ACCOUNT_USER_TOKEN"
+    REPOSITORY_DOMAIN: "ECR_REPOSITORY_DOMAIN"
+    DB_HOST: "API_DB_HOST"
+    DB_NAME: "API_DB_NAME"
+    DB_USER: "API_DB_USER"
+    DB_PASS: "API_DB_PASS"
+    DB_PORT: "API_DB_PORT"
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.18
+    commands:
+      - echo "Docker Login..."
+      - echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USER} --password-stdin
+      - echo "Installing goose..."
+      - go install github.com/pressly/goose/v3/cmd/goose@v3.7.0
+      - export PATH=$PATH:$(go env GOPATH)/bin
+  pre_build:
+    commands:
+      - echo hadolint install
+      - docker pull hadolint/hadolint
+      - docker run --rm -i hadolint/hadolint hadolint --ignore DL3018 - < build/docker/go/Dockerfile
+      - echo dockle install
+      - DOCKLE_VERSION=$(curl --silent "https://api.github.com/repos/goodwithtech/dockle/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+      - curl -L -o dockle.deb https://github.com/goodwithtech/dockle/releases/download/v${DOCKLE_VERSION}/dockle_${DOCKLE_VERSION}_Linux-64bit.deb
+      - sudo dpkg -i dockle.deb && rm dockle.deb
+      - echo trivy install
+      - wget -q https://github.com/aquasecurity/trivy/releases/download/v0.38.3/trivy_0.38.3_Linux-64bit.deb
+      - sudo dpkg -i trivy_0.38.3_Linux-64bit.deb
+      - echo Logging in to ECR
+      - REPOSITORY_URI=${REPOSITORY_DOMAIN}/${ECRName}
+      - aws ecr --region ${AWS_REGION} get-login-password | docker login --username AWS --password-stdin https://${REPOSITORY_URI}
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  build:
+    commands:
+      - echo "Running migrations..."
+      - goose -dir ./build/db/migration mysql "${DB_USER}:${DB_PASS}@tcp(${DB_HOST}:${DB_PORT})/${DB_NAME}" up
+      - export DOCKER_CONTENT_TRUST=1
+      - echo Build started on `date`
+      - docker image build -t ${REPOSITORY_URI}:${IMAGE_TAG} --target runner -f build/docker/go/Dockerfile .
+  post_build:
+    commands:
+      - export DOCKER_CONTENT_TRUST=0
+      - echo dockle image check
+      - dockle --format json --exit-code 1 ${REPOSITORY_URI}:${IMAGE_TAG}
+      - echo trivy scan
+      - trivy image --no-progress --ignore-unfixed --exit-code 1 --severity CRITICAL ${REPOSITORY_URI}:${IMAGE_TAG}
+      - echo Build completed on `date`
+      - echo Pushing the Docker images
+      - docker image push ${REPOSITORY_URI}:${IMAGE_TAG}
+      - printf '{"ImageURI":"%s"}' ${REPOSITORY_URI}:${COMMIT_HASH} > imageDetail.json
+artifacts:
+  files: 
+    - imageDetail.json
+    - appspec.yml
+    - taskdef.json

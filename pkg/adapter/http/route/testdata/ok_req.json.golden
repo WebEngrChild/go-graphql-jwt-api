@@ -1,0 +1,3 @@
+{
+    "query": "query { getMessages { id text created_at user { name } } }"
+}
