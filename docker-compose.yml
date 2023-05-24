@@ -21,7 +21,7 @@ services:
     depends_on:
       - mysql
     networks:
-      my_network:
+      sample_graph_network:
         ipv4_address: 172.30.0.2
 
   mysql:
@@ -39,9 +39,9 @@ services:
     ports:
       - ${API_DB_PORT}:3306
     networks:
-      my_network:
+      sample_graph_network:
         ipv4_address: 172.30.0.3
 
 networks:
-  my_network:
+  sample_graph_network:
     external: true
