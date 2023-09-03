@@ -1,0 +1,160 @@
+{
+  "taskDefinitionArn": "arn:aws:ecs:ap-northeast-1:00000000000:task-definition/api-dev-task-definition:25",
+  "containerDefinitions": [
+    {
+      "name": "api-container",
+      "image": "<IMAGE1_NAME>",
+      "cpu": 0,
+      "memoryReservation": 128,
+      "links": [],
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "entryPoint": [],
+      "command": [],
+      "environment": [],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "linuxParameters": {
+        "devices": [],
+        "initProcessEnabled": true,
+        "tmpfs": []
+      },
+      "secrets": [
+        {
+          "name": "API_ENV",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_ENV"
+        },
+        {
+          "name": "API_FRONT_URL",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_FRONT_URL"
+        },
+        {
+          "name": "API_DB_HOST",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_DB_HOST"
+        },
+        {
+          "name": "API_DB_NAME",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_DB_NAME"
+        },
+        {
+          "name": "API_DB_USER",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_DB_USER"
+        },
+        {
+          "name": "API_DB_PASS",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_DB_PASS"
+        },
+        {
+          "name": "API_DB_PORT",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_DB_PORT"
+        },
+        {
+          "name": "SENTRY_DSN",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_SENTRY_DSN"
+        },
+        {
+          "name": "API_APP_DOMAIN",
+          "valueFrom": "arn:aws:ssm:ap-northeast-1:00000000000:parameter/API_APP_DOMAIN"
+        }
+      ],
+      "readonlyRootFilesystem": false,
+      "dnsServers": [],
+      "dnsSearchDomains": [],
+      "extraHosts": [],
+      "dockerSecurityOptions": [],
+      "dockerLabels": {},
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "api-dev-cluster-log",
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-stream-prefix": "api"
+        },
+        "secretOptions": []
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "api-dev-task-definition",
+  "taskRoleArn": "arn:aws:iam::00000000000:role/api-dev-task-role",
+  "executionRoleArn": "arn:aws:iam::00000000000:role/api-dev-task-execution-role",
+  "networkMode": "awsvpc",
+  "revision": 25,
+  "volumes": [],
+  "status": "ACTIVE",
+  "requiresAttributes": [
+    {
+      "name": "ecs.capability.execution-role-awslogs"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.ecr-auth"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.task-iam-role"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.22"
+    },
+    {
+      "name": "ecs.capability.execution-role-ecr-pull"
+    },
+    {
+      "name": "ecs.capability.secrets.ssm.environment-variables"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+    },
+    {
+      "name": "ecs.capability.task-eni"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.25"
+    }
+  ],
+  "placementConstraints": [],
+  "compatibilities": [
+    "EC2",
+    "FARGATE"
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "registeredAt": "2023-05-11T21:53:50.928Z",
+  "registeredBy": "arn:aws:iam::00000000000:user/admin-user",
+  "tags": [
+    {
+      "key": "Environment",
+      "value": "dev"
+    },
+    {
+      "key": "SystemName",
+      "value": "api"
+    },
+    {
+      "key": "Name",
+      "value": "api-dev-task-definition"
+    }
+  ]
+}
